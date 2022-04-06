@@ -4,9 +4,9 @@
   "description": "Node.js sample app for OpenShift 3",
   "main": "server.js",
   "dependencies": {
-      "express": "*",
-      "mongodb": "*",
-      "ejs": "*"
+    "express": "*",
+    "mongodb": "*",
+    "ejs": "*"
   },
   "engine": {
     "node": "*",

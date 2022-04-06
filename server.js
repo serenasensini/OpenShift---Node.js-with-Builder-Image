@@ -1,13 +1,16 @@
-//  OpenShift sample Node application
 var express = require('express');
-var fs      = require('fs');
+const path = require("ejs");
 var app     = express();
-var eps     = require('ejs');
 
 app.engine('html', require('ejs').renderFile);
+app.use(express.static('views/dist'));
 
+// specifiche sulla connessione con Mongo
+// # porta
 var port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080;
+// # host
 var ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
+// # URL Mongo su OpenShift o esterno
 var mongoURL = process.env.OPENSHIFT_MONGODB_DB_URL || process.env.MONGO_URL;
 var mongoURLLabel = "";
 if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
@@ -20,8 +23,6 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
     if (process.env.MONGODB_USER && process.env.MONGODB_PASSWORD) {
       mongoURL += process.env.MONGODB_USER + ':' + process.env.MONGODB_PASSWORD + '@';
     }
-    // Provide UI label that excludes user id and pw
-
     mongoURLLabel += mongoHost + ':' + mongoPort + '/' + process.env.MONGODB_DATABASE;
     mongoURL += mongoHost + ':' + mongoPort + '/' + process.env.MONGODB_DATABASE;
   }
@@ -29,6 +30,7 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
 var db = null;
 var dbDetails = new Object();
 
+// connessione al DB Mongo
 var initDb = function(callback) {
   if (mongoURL == null) return;
 
@@ -50,12 +52,13 @@ var initDb = function(callback) {
   });
 };
 
+// render della pagina principale
 app.get('/', function (req, res) {
   if (db) {
-    var col = db.collection('counts');
-    // Create a document with request IP and current time of request
+    var col = db.collection('pageReqs');
     col.insert({ip: req.ip, date: Date.now()});
     col.count(function(err, count){
+      res.set({'Content-Type': 'text/html', 'X-Content-Type-Options': 'nosniff'});
       res.render('index.html', { pageCountMessage : count, dbInfo: dbDetails });
     });
   } else {
@@ -63,20 +66,20 @@ app.get('/', function (req, res) {
   }
 });
 
-app.get('/pagecount', function (req, res) {
+app.get('/dbTest', function (req, res) {
   if (db) {
-    db.collection('counts').count(function(err, count ){
-      res.send('{ pageCount: ' + count +'}');
+    db.collection('pageReqs').count(function(err, count ){
+      res.send('{ counter: ' + count +'}');
     });
-  } else { 
-    res.send('{ pageCount: -1 }');
+  } else {
+    res.send('{ counter: -1 }');
   }
 });
 
 // error handling
 app.use(function(err, req, res, next){
   console.error(err.stack);
-  res.status(500).send('Something bad happened!');
+  res.status(500).send('Something bad happened! Try again');
 });
 
 initDb(function(err){
