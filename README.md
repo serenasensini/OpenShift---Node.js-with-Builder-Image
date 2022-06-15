@@ -19,11 +19,11 @@ That's it, project has been created.  Though it would probably be good to set yo
 
 ### The app ###
 
-Now let's pull in the app source code from [GitHub repo](https://github.com/openshift/nodejs-ex) (fork if you like).
+Now let's pull in the app source code from [GitHub repo](https://github.com/serenasensini/OpenShift---Node.js-with-Builder-Image) (fork if you like).
 
 #### create ####
 
-        $ oc new-app https://github.com/openshift/nodejs-ex -l name=myapp
+        $ oc new-app https://github.com/serenasensini/OpenShift---Node.js-with-Builder-Image -l name=myapp
         
 That should be it, this form of `new-app` will locate an appropriate image on DockerHub, create an ImageStream for that image, and then create the right build configuration, deployment configuration and service definition.  Next you'll be able to kick off the build, though new-app will kick off a build once all required dependencies are confirmed.  The -l flag will apply a label of "name=myapp" to all the resources created by new-app, for easy management later.
 
